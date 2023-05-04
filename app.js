@@ -9,26 +9,31 @@ const sess = {
  cookie: {}
 };
 
+// I'll be using my session as a middleware on every acces I have to my server
 app.use(session(sess));
 
+// User loggin as they use this route
 app.get('/login', (req, res) => {
-    req.session.user = {name: 'Lazar'}
+    // creates user with an object key value pair for name and "paco"
+    req.session.user = {name: 'Paco'}
+    // sends a response for the browser
     res.json({message: "Logged in"})
 })
 
+// This secure route will only grant acces when a cookie with a session is in the browser
 app.get('/secure', (req, res) => {
     if(req.session.user?.name){
-        return res.status(403).json({error: "Please Log in"})
+        return res.json({message: `Hello ${req.session.user.name} welcome back`})
     }
-    res.json({message: `Hello ${req.session.user.name} welcome back`})
+    return res.status(403).json({error: "Please Log in"})
 })
 
-app.get('*', (req, res) => {
-    res.json({message: "site reached"});
-})
+// app.get('*', (req, res) => {
+//     res.json({message: "site reached"});
+// })
 
-app.get('/logout', (req, res) => {
-    res.session.destroy(error => {
+app.get('/logout', (req, res, next) => {
+    req.session.destroy(function(error) {
         if(error){
             return next(error)
         }
